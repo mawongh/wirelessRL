@@ -37,7 +37,8 @@
 using namespace ns3;
 using std::vector;
 
-//Defining global variables
+//Defining and initialing global variables
+std::string input_file = "scratch/lena-simple_env_temp.csv";
 uint32_t nEnb;
 vector < int > siteid;
 vector < int > nodeid;
@@ -53,7 +54,7 @@ vector < int > gain;
 int read_conf() {
     std::string line;
     std::ifstream file;
-    file.open("scratch/simple_env_conf.csv");
+    file.open(input_file);
     int f1, f2, f3, f4, f5, f6, f7, f8, f9;
     char first_char;
     while (getline(file, line)) {
@@ -99,7 +100,7 @@ main (int argc, char *argv[]) {
     read_conf();
     
 //    Variables initialization
-    uint32_t nUe = 10; // Number of UEs per Node (sector)
+    uint32_t nUe = 1; // Number of UEs per Node (sector)
     double nodeHeight = 1.5; // Height in meters of the UEs
     double roomLength = 1000; // Size of the square around the node where the UE will be positioned
 
@@ -109,7 +110,7 @@ main (int argc, char *argv[]) {
     cmd.Parse (argc, argv);
 
     Ptr < LteHelper > lteHelper = CreateObject<LteHelper> ();
-    lteHelper->EnableLogComponents ();
+    // lteHelper->EnableLogComponents ();
     lteHelper->SetAttribute ("PathlossModel", StringValue ("ns3::FriisPropagationLossModel"));
 
 //   Create Nodes: eNodeB and UE
@@ -199,6 +200,7 @@ main (int argc, char *argv[]) {
     remHelper->SetAttribute ("YMin", DoubleValue (0.0));
     remHelper->SetAttribute ("YMax", DoubleValue (+5000.0));
     remHelper->SetAttribute ("Z", DoubleValue (1.5));
+    // remHelper->SetAttribute ("UseDataChannel", BooleanValue (true));
     remHelper->Install ();
 
     Simulator::Run ();
