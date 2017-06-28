@@ -61,6 +61,6 @@ def test_network_class():
 	print('plot the output remfile...')
 	net1.plotrem()
 
-if __name__ = '__main__':
+if __name__ == '__main__':
 	# runs the test_network_class function
 	test_network_class()
