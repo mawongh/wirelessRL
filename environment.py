@@ -16,6 +16,11 @@ class network():
 	def writetocsv(self, conf_filename):
 		self.conf.to_csv(conf_filename, index = False)
 
+	def loadrem(self):
+		self.rem = pd.read_csv(self.output_filename, sep='\t', header=None)
+		# adding a fifth column as the SINR in dB
+		self.rem.loc[:,4] = 10*np.log(self.rem.loc[:,3])
+
 	def runsimulation(self):
 		# write the configuration into a csv file
 		print('Storing configuration...')
@@ -28,32 +33,34 @@ class network():
 		print('Removing temp file...')
 		shellcommand = 'rm ~/ws/bake/source/ns-3.26/scratch/' + network.tempfile
 		subprocess.call(shellcommand, shell=True)
+		# updating the rem
+		self.loadrem()
 
 	def plotrem(self):
-		rem = pd.read_csv(self.output_filename, sep='\t', header=None)
 		plt.figure(figsize=(9,8))
-		plt.scatter(rem.loc[:,0], rem.loc[:,1], c = 10*np.log(rem.loc[:,3]), marker='s', edgecolors='none')
+		plt.scatter(self.rem.loc[:,0], self.rem.loc[:,1],\
+					c = self.rem.loc[:,4], marker='s', edgecolors='none')
 		plt.colorbar()
 		plt.show()
 
+	def cdfrem(self):
+		pass
 
-# test for the use of the class
-# infile = 'simple_env_conf.csv'
-# outfile = 'temp_conf.csv'
-# # outfile = 'lena-simple_env.rem'
+def test_network_class():
+	conf_file = 'simple_env_conf.csv'
+	
+	print('creating the class...')
+	net1 = network()
 
-# print('creating the class...')
-# net1 = network()
+	print('reading the class from file...')
+	net1.readfromcsv(conf_file)
 
-# print('reading the class from file...')
-# # net1.readfromcsv(infile)
+	print('running the simulation...\n')
+	net1.runsimulation()
 
-# # print('writing to a sample file...')
-# # net1.writetocsv(outfile)
+	print('plot the output remfile...')
+	net1.plotrem()
 
-# # print(net1.output_filename)
-# # print('running the simulation...\n')
-# # net1.runsimulation()
-
-# # plot the output remfile
-# net1.plotrem()
+if __name__ = '__main__':
+	# runs the test_network_class function
+	test_network_class()
