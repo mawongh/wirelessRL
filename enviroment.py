@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import subprocess
+import matplotlib.pyplot as plt
 
 class network():
 	default_remfile = 'lena-simple_env.rem'
@@ -28,21 +29,31 @@ class network():
 		shellcommand = 'rm ~/ws/bake/source/ns-3.26/scratch/' + network.tempfile
 		subprocess.call(shellcommand, shell=True)
 
+	def plotrem(self):
+		rem = pd.read_csv(self.output_filename, sep='\t', header=None)
+		plt.figure(figsize=(9,8))
+		plt.scatter(rem.loc[:,0], rem.loc[:,1], c = 10*np.log(rem.loc[:,3]), marker='s', edgecolors='none')
+		plt.colorbar()
+		plt.show()
+
 
 # test for the use of the class
-infile = 'simple_env_conf.csv'
-outfile = 'temp_conf.csv'
-# outfile = 'lena-simple_env.rem'
+# infile = 'simple_env_conf.csv'
+# outfile = 'temp_conf.csv'
+# # outfile = 'lena-simple_env.rem'
 
-print('creating the class...')
-net1 = network()
+# print('creating the class...')
+# net1 = network()
 
-print('reading the class from file...')
-net1.readfromcsv(infile)
+# print('reading the class from file...')
+# # net1.readfromcsv(infile)
 
-# print('writing to a sample file...')
-# net1.writetocsv(outfile)
+# # print('writing to a sample file...')
+# # net1.writetocsv(outfile)
 
-# print(net1.output_filename)
-# print('running the simulation...\n')
-net1.runsimulation()
+# # print(net1.output_filename)
+# # print('running the simulation...\n')
+# # net1.runsimulation()
+
+# # plot the output remfile
+# net1.plotrem()
