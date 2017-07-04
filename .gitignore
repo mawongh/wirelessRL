@@ -2,3 +2,5 @@ lena-simple_env.rem
 __pycache__
 references
 notebooks
+.ipynb_checkpoints
+*.ipynb

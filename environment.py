@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import subprocess
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import cdist
 
 class network():
 	# filenames
@@ -26,6 +27,8 @@ class network():
 		self.rem = pd.read_csv(self.output_filename, sep='\t', header=None)
 		# adding a fifth column as the SINR in dB
 		self.rem.loc[:,4] = 10*np.log(self.rem.loc[:,3])
+		self.rem.columns = ['x', 'y', 'z', 'SINR', 'SINR_dB']
+		self.rem['point'] = [(x, y) for x,y in zip(self.rem['x'], self.rem['y'])]
 
 	def runsimulation(self):
 		# write the configuration into a csv file
@@ -45,8 +48,8 @@ class network():
 	def plotrem(self):
 		fig = plt.figure(figsize=(7,8))
 		ax = fig.add_subplot(111)
-		ax.scatter(self.rem.loc[:,0], self.rem.loc[:,1], s=25,\
-				c = self.rem.loc[:,4], marker='s', edgecolors = 'none')
+		ax.scatter(self.rem['x'], self.rem['y'], s=25,\
+				c = self.rem['SINR_dB'], marker='s', edgecolors = 'none')
 		# plt.colorbar()
 		ax.set_xlim(self.x_min, self.x_max)
 		ax.set_ylim(self.y_min, self.y_max)
@@ -71,6 +74,11 @@ class network():
 		sd_5 = [[100000, 0], [0, 100000]]
 		# generates the ue distribution based on five (5) multivariate normal dist
 		# and one (1) uniform distribution
+
+		def closest_point(point, points):
+			""" Find closest point from a list of points. """
+			return points[cdist([point], points).argmin()]
+
 		x1,y1 = np.random.multivariate_normal(center_1, sd_1, np.int(N * ue_prop[1])).T
 		self.ue_dist = pd.DataFrame({'x':x1, 'y':y1})
 		x2, y2 = np.random.multivariate_normal(center_2, sd_2, np.int(N * ue_prop[2])).T
@@ -87,6 +95,9 @@ class network():
 		# filters out the UEs falling outside the environment box
 		self.ue_dist = self.ue_dist[(self.ue_dist.x >= self.x_min ) & (self.ue_dist.x <= self.x_max)\
 						   & (self.ue_dist.y <= self.y_max) & (self.ue_dist.x >= self.y_min)]
+		self.ue_dist['point'] = [(x, y) for x,y in zip(self.ue_dist['x'], self.ue_dist['y'])]
+		self.ue_dist['closest'] = [closest_point(x, list(self.rem['point'])) for x in self.ue_dist['point']]
+
 
 	def plot_ue_dist(self):
 		fig = plt.figure(figsize=(7,8))
@@ -95,6 +106,24 @@ class network():
 		ax.set_xlim(self.x_min, self.x_max)
 		ax.set_ylim(self.y_min, self.y_max)
 		plt.show()
+
+	def reward(self, variant = 2):
+
+		thershold_percentile = 1 - 0.95
+		thershold_SINR = 10
+		# defining the functions to determine the closest points and lookups
+
+		def match_value(df, col1, x, col2):
+			""" Match value x from col1 row to value in col2. """
+			return df[df[col1] == x][col2].values[0]
+
+		self.ue_dist['SINR_dB'] = [match_value(self.rem, 'point', x, 'SINR_dB') for x in self.ue_dist['closest']]
+
+		# returning the reward according to the requested variant
+		if variant == 1:
+			return (self.ue_dist['SINR_dB'].quantile(thershold_percentile) >= thershold_SINR) * 100
+		if variant == 2:
+			return self.ue_dist['SINR_dB'].quantile(thershold_percentile)
 
 
 def test_network_class():
