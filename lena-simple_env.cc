@@ -48,7 +48,7 @@ vector < int > height;
 vector < int > azimuth;
 vector < int > beamwidth;
 vector < int > txpower;
-vector < int > gain;
+vector < int > cell_on;
 
 //This function reads the contents of the configuration file and fills out the global variables
 int read_conf() {
@@ -72,17 +72,19 @@ int read_conf() {
                   f7 >> c7 >>
                   f8 >> c8 >>
                   f9;
-            siteid.push_back(f1);
-            nodeid.push_back(f2);
-            lon.push_back(f3);
-            lat.push_back(f4);
-            height.push_back(f5);
-            azimuth.push_back(f6);
-            beamwidth.push_back(f7);
-            txpower.push_back(f8);
-            gain.push_back(f9);
+            if (f9 == 1) {
+                siteid.push_back(f1);
+                nodeid.push_back(f2);
+                lon.push_back(f3);
+                lat.push_back(f4);
+                height.push_back(f5);
+                azimuth.push_back(f6);
+                beamwidth.push_back(f7);
+                txpower.push_back(f8);
+                cell_on.push_back(f9);
             
-            nEnb++;
+                nEnb++;
+            }
         }
     }
     file.close();
@@ -126,7 +128,7 @@ main (int argc, char *argv[]) {
         NodeContainer ueNode;
         ueNode.Create (nUe);
         ueNodes.push_back (ueNode);
-        }
+    }
 
     MobilityHelper mobility;
     vector<Vector> enbPosition;
@@ -137,7 +139,6 @@ main (int argc, char *argv[]) {
     
     // Add each sector
     for (uint32_t index = 0; index < nEnb; index++) {
-
         Vector v (lon.at(index), lat.at(index), height.at(index));
         positionAlloc->Add (v);
         enbPosition.push_back (v);
@@ -149,21 +150,21 @@ main (int argc, char *argv[]) {
 
   // Position of UEs attached to eNB
   for (uint32_t i = 0; i < nEnb; i++) {
-        Ptr<UniformRandomVariable> posX = CreateObject<UniformRandomVariable> ();
-        posX->SetAttribute ("Min", DoubleValue (enbPosition.at(i).x - roomLength * 0.5));
-        posX->SetAttribute ("Max", DoubleValue (enbPosition.at(i).x + roomLength * 0.5));
-        Ptr<UniformRandomVariable> posY = CreateObject<UniformRandomVariable> ();
-        posY->SetAttribute ("Min", DoubleValue (enbPosition.at(i).y - roomLength * 0.5));
-        posY->SetAttribute ("Max", DoubleValue (enbPosition.at(i).y + roomLength * 0.5));
-        positionAlloc = CreateObject<ListPositionAllocator> ();
+            Ptr<UniformRandomVariable> posX = CreateObject<UniformRandomVariable> ();
+            posX->SetAttribute ("Min", DoubleValue (enbPosition.at(i).x - roomLength * 0.5));
+            posX->SetAttribute ("Max", DoubleValue (enbPosition.at(i).x + roomLength * 0.5));
+            Ptr<UniformRandomVariable> posY = CreateObject<UniformRandomVariable> ();
+            posY->SetAttribute ("Min", DoubleValue (enbPosition.at(i).y - roomLength * 0.5));
+            posY->SetAttribute ("Max", DoubleValue (enbPosition.at(i).y + roomLength * 0.5));
+            positionAlloc = CreateObject<ListPositionAllocator> ();
       
-        for (uint32_t j = 0; j < nUe; j++) {
-            positionAlloc->Add (Vector (posX->GetValue (), posY->GetValue (), nodeHeight));
-            mobility.SetPositionAllocator (positionAlloc);
-            }
+            for (uint32_t j = 0; j < nUe; j++) {
+                positionAlloc->Add (Vector (posX->GetValue (), posY->GetValue (), nodeHeight));
+                mobility.SetPositionAllocator (positionAlloc);
+                }
       
-        mobility.Install (ueNodes.at(i));
-        BuildingsHelper::Install (ueNodes.at(i));
+            mobility.Install (ueNodes.at(i));
+            BuildingsHelper::Install (ueNodes.at(i));
     }
 
 //   Create Devices and install them in the Nodes (eNB and UE)
@@ -171,23 +172,23 @@ main (int argc, char *argv[]) {
     vector < NetDeviceContainer > ueDevs;
 
     for (uint32_t index = 0; index < nEnb; index++) {
-        Config::SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue (txpower.at(index)));
-        lteHelper->SetEnbAntennaModelType ("ns3::CosineAntennaModel");
-        lteHelper->SetEnbAntennaModelAttribute ("Orientation", DoubleValue (azimuth.at(index)));
-        lteHelper->SetEnbAntennaModelAttribute ("Beamwidth",   DoubleValue (beamwidth.at(index)));
-        lteHelper->SetEnbAntennaModelAttribute ("MaxGain",     DoubleValue (gain.at(index)));
-        enbDevs.Add ( lteHelper->InstallEnbDevice (threeSectorNodes.Get (index)));
+            Config::SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue (txpower.at(index)));
+            lteHelper->SetEnbAntennaModelType ("ns3::CosineAntennaModel");
+            lteHelper->SetEnbAntennaModelAttribute ("Orientation", DoubleValue (azimuth.at(index)));
+            lteHelper->SetEnbAntennaModelAttribute ("Beamwidth",   DoubleValue (beamwidth.at(index)));
+            lteHelper->SetEnbAntennaModelAttribute ("MaxGain",     DoubleValue (0));
+            enbDevs.Add ( lteHelper->InstallEnbDevice (threeSectorNodes.Get (index)));
     }
     
     
     for (uint32_t i = 0; i < nEnb; i++) {
-        NetDeviceContainer ueDev = lteHelper->InstallUeDevice (ueNodes.at(i));
-        ueDevs.push_back (ueDev);
-        lteHelper->Attach (ueDev, enbDevs.Get (i));
-        enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
-        EpsBearer bearer (q);
-        lteHelper->ActivateDataRadioBearer (ueDev, bearer);
-        }
+            NetDeviceContainer ueDev = lteHelper->InstallUeDevice (ueNodes.at(i));
+            ueDevs.push_back (ueDev);
+            lteHelper->Attach (ueDev, enbDevs.Get (i));
+            enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
+            EpsBearer bearer (q);
+            lteHelper->ActivateDataRadioBearer (ueDev, bearer);
+    }
 
 //   by default, simulation will anyway stop right after the REM has been generated
     Simulator::Stop (Seconds (0.0069));
