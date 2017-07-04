@@ -126,6 +126,11 @@ class network():
 			return self.ue_dist['SINR_dB'].quantile(thershold_percentile)
 
 
+	def getstate_vector(self):
+		vector = np.array(self.conf['azimuth'].tolist() + self.conf['txpower'].tolist() + self.conf['cell_on'].tolist())
+		return vector
+
+
 def test_network_class():
 	conf_file = 'simple_env_conf.csv'
 	
