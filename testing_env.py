@@ -12,7 +12,7 @@ df = pd.DataFrame()
 # gets the initial state
 state = env.getstate_vector()
 
-N = 2 # number of steps
+N = 500 # number of steps
 for i in range(N):
 	action = random.randrange(126)
 	new_state, reward = env.execute_action(action)
@@ -21,6 +21,8 @@ for i in range(N):
 	# appends new data to the dataframe
 	df = df.append({'state': state, 'action': action, 'reward': reward, 'new_state': new_state},
 			  ignore_index=True)
+	# updates the state
+	state = new_state
 
-print(df)
+# print(df)
 df.to_csv('dataset.csv', index=False)
