@@ -127,9 +127,68 @@ class network():
 
 
 	def getstate_vector(self):
-		vector = np.array(self.conf['azimuth'].tolist() + self.conf['txpower'].tolist() + self.conf['cell_on'].tolist())
+		vector = np.array(self.conf['azimuth'].tolist() + \
+						  self.conf['txpower'].tolist() + \
+						  self.conf['cell_on'].tolist())
 		return vector
 
+	@staticmethod
+	def action_code_description(action_code):
+		# dictionary of cell action
+		attribute_dict = {0:'azimuth', 1:'txpower', 2:'cell_on'}
+		action_dict = {0:'incr20', 1:'decr20', 2:'incr2', 3:'decr2', 4:'on', 5:'off'}
+
+		cell = int(action_code / 6) # this operations gives the cell on the action will be executed
+		subaction = action_code % 6
+		attribute = int(subaction / 2)
+
+		# initialising the description String
+		descr = 'cell_{}.{}.{}'.format(cell, attribute_dict[attribute], action_dict[subaction])
+		print(descr)
+		# return descr
+		return (cell, attribute_dict[attribute], action_dict[subaction])
+
+	def execute_action(self, action_code):
+		# get the action required for the action code
+		cell, attribute, action = self.action_code_description(action_code)
+		if action == 'incr20':
+			self.conf.loc[cell, attribute] += 20
+		if action == 'decr20':
+			self.conf.loc[cell, attribute] -= 20
+		if action == 'incr2':
+			self.conf.loc[cell, attribute] += 2
+		if action == 'decr2':
+			self.conf.loc[cell, attribute] -= 2
+		if action == 'on':
+			self.conf.loc[cell, attribute] = 1
+		if action == 'off':
+			self.conf.loc[cell, attribute] = 0
+		# checks and corrects the configuration
+		self.check_conf()
+		# runs the simulation
+		self.runsimulation()
+		# generates a new ue distribution (this makes the reward stochastic), comment for determinist
+		self.gen_ue_dist(300) # 300 users
+		# return a tuple with the new state vector and the reward
+		return (self.getstate_vector(), self.reward())
+
+	def check_conf(self):
+		"""checks and corrects if the configuration is valid"""
+		cell0s = [(i%3==0) for i in range(21)]
+		cell1s = [(i%3==1) for i in range(21)]
+		cell2s = [(i%3==2) for i in range(21)]
+		## the azimuth values for first cells in each site sould be between 0 and 100
+		self.conf.azimuth[cell0s & (self.conf.azimuth < 0)] = 0
+		self.conf.azimuth[cell0s & (self.conf.azimuth > 100)] = 100
+		## the azimuth values for second cells in each site sould be between 120 and 220
+		self.conf.azimuth[cell1s & (self.conf.azimuth < 120)] = 120
+		self.conf.azimuth[cell1s & (self.conf.azimuth > 220)] = 220
+		## the azimuth values for second cells in each site sould be between 240 and 340
+		self.conf.azimuth[cell2s & (self.conf.azimuth < 240)] = 240
+		self.conf.azimuth[cell2s & (self.conf.azimuth > 340)] = 340
+		## the txpower for all cells should be between 36 and 46 dBm
+		self.conf.txpower[self.conf.txpower < 36] = 36
+		self.conf.txpower[self.conf.txpower > 46] = 46
 
 def test_network_class():
 	conf_file = 'simple_env_conf.csv'
