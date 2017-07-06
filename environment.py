@@ -17,8 +17,9 @@ class network():
 		self.x_max = 3300
 		self.y_max = 5000
 
-	def readfromcsv(self, input_filename):
+	def readfromcsv(self, input_filename = 'simple_env_conf.csv'):
 		self.conf = pd.read_csv(input_filename)
+		self.check_conf()
 
 	def writetocsv(self, conf_filename):
 		self.conf.to_csv(conf_filename, index = False)
@@ -144,7 +145,7 @@ class network():
 
 		# initialising the description String
 		descr = 'cell_{}.{}.{}'.format(cell, attribute_dict[attribute], action_dict[subaction])
-		print(descr)
+		print(action_code, descr)
 		# return descr
 		return (cell, attribute_dict[attribute], action_dict[subaction])
 
