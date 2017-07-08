@@ -12,7 +12,7 @@ df = pd.DataFrame()
 # gets the initial state
 state = env.getstate_vector()
 
-N = 500 # number of steps
+N = 5 # number of steps
 for i in range(N):
 	action = random.randrange(126)
 	new_state, reward = env.execute_action(action)

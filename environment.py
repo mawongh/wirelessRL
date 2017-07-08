@@ -191,6 +191,19 @@ class network():
 		self.conf.txpower[self.conf.txpower < 36] = 36
 		self.conf.txpower[self.conf.txpower > 46] = 46
 
+	def reset(self):
+		""" will set the state of to a random state"""
+		# azimuths
+		self.conf.azimuth = np.tile([0, 120, 240], 7) + \
+							np.random.randint(6, size = 21) * 20
+		# txpower
+		self.conf.txpower = 36 + np.random.randint(6, size = 21) * 2
+		# cell_on
+		self.conf.cell_on = np.random.random.randint(2, size = 21)
+
+
+
+
 def test_network_class():
 	conf_file = 'simple_env_conf.csv'
 	
