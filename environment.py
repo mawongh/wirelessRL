@@ -199,7 +199,7 @@ class network():
 		# txpower
 		self.conf.txpower = 36 + np.random.randint(6, size = 21) * 2
 		# cell_on
-		self.conf.cell_on = np.random.random.randint(2, size = 21)
+		self.conf.cell_on = np.random.randint(2, size = 21)
 
 
 
