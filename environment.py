@@ -133,6 +133,12 @@ class network():
 						  self.conf['cell_on'].tolist())
 		return vector
 
+	def getstate_vector2(self):
+		vector = np.array(self.conf['lat'].tolist() + self.conf['lon'].tolist() + \
+			self.conf['azimuth'].tolist() + self.conf['txpower'].tolist() + \
+			self.conf['cell_on'].tolist())
+		return vector
+
 	@staticmethod
 	def action_code_description(action_code):
 		# dictionary of cell action
