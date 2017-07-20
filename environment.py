@@ -177,7 +177,7 @@ class network():
 		# generates a new ue distribution (this makes the reward stochastic), comment for determinist
 		self.gen_ue_dist(300) # 300 users
 		# return a tuple with the new state vector and the reward
-		return (self.getstate_vector(), self.reward())
+		return (self.getstate_vector2(), self.reward())
 
 	def check_conf(self):
 		"""checks and corrects if the configuration is valid"""

@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 
 class Model:
 	def __init__(self):
-		self.theta = np.random.randn(169) / 2 # initializes the weights
+		self.theta = np.random.randn(126*127) / 2 # initializes the weights
 		self.scaler = StandardScaler()
 		self.scaler.mean_ = np.loadtxt('mean_.csv', delimiter=',')
 		self.scaler.scale_ = np.loadtxt('scale_.csv', delimiter=',')
@@ -165,10 +165,10 @@ class e_greedy_timedecay:
 	def get_action(self, model, state_vector):
 		# generates a random number
 		rd = np.random.rand(1)[0]
-		print('rd: {}, eps: {}'.format(rd, e.epsilon))
+		print('rd: {}, eps: {}'.format(rd, self.epsilon))
 		if rd >= self.epsilon: # if will exploit
 			print('exploit..')
-			Qs = getQs(model, state_vector)
+			Qs = model.getQs(state_vector)
 			# print(Qs)
 			action = max(Qs, key=Qs.get)
 			# print('action: {}'.format(action))
