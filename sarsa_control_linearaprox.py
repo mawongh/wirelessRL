@@ -16,10 +16,10 @@ if __name__ == '__main__':
 	env.readfromcsv()
 
 	# Variable initizialization
-	N_episodes = 10
-	max_steps_per_episode = 200
+	N_episodes = 100
+	max_steps_per_episode = 500
 	alpha = 0.001
-	gamma = 0
+	gamma = 0.5
 	r_thershold = 5
 	outputfile = 'SARSA_training_history.csv'
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 	q = Model()
 
 	# defining the policy
-	e = e_greedy_timedecay(126, initial_epsilon = 0.9, decaying_factor = 0.999)
+	e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
 
 	# creates an empty dataframe with four columns: S, A, R, S'
 	df = pd.DataFrame(columns = ['00_episode', '01_step',
