@@ -1,6 +1,7 @@
 # the usual imports
 # import pandas as pd
 import numpy as np
+import pandas as pd
 # from scipy import spatial
 # importing the network environment class
 from environment import network
@@ -11,7 +12,6 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras import optimizers
 
-from linear_aproximation import e_greedy_timedecay
 
 
 class Model:
@@ -23,7 +23,7 @@ class Model:
 		# the number of hidden neurons
 		N = 200
 		# create the graph for the state-action value funtion Q
-		self.Q = Senquential()
+		self.Q = Sequential()
 		# input layer
 		self.Q.add(Dense(N, activation = 'relu', input_shape=(state_vector_len,)))
 		# second layer hidden
@@ -36,7 +36,7 @@ class Model:
 		self.Q.compile(optimizer=opt, loss='mean_squared_error')
 
 		# creates the graph for the target state-action value funtion Qhat
-		self.Qhat = Senquential()
+		self.Qhat = Sequential()
 		# input layer
 		self.Qhat.add(Dense(N, activation = 'relu', input_shape=(state_vector_len,)))
 		# second layer hidden
@@ -46,7 +46,7 @@ class Model:
 		# compiles the model
 		# self.Qhat.compile(optimizer='sgd', loss='mean_squared_error')
 		# copies the network weights into the target network
-		self.Qhat.set_weights(self.Q.get_weights)
+		self.Qhat.set_weights(self.Q.get_weights())
 
 		# creates the scaler for normalizing the raw state  vector
 		self.scaler = StandardScaler()
@@ -55,10 +55,10 @@ class Model:
 
 	def store_transition(self, s, a, reward, s_next, terminal):
 		# normalizes the space vectors
-		s = self.scaler.transform(s)
-		s_next = self.scaler.transform(s_next)
+		s = self.scaler.transform(s.reshape(1,-1))[0]
+		s_next = self.scaler.transform(s_next.reshape(1,-1))[0]
 
-		if len(self.D['s'] > = self.max_experiences):
+		if len(self.D['s']) >= self.max_experiences:
 			self.D['s'].pop(0)
 			self.D['a'].pop(0)
 			self.D['r'].pop(0)
@@ -72,29 +72,29 @@ class Model:
 
 	def sample_minibatch(self):
 		# in case the current experience D is less than the batch size
-		self.minibatch_sz = np.min([len(self.D['s'], self.batch_sz)])
+		self.minibatch_sz = np.min([len(self.D['s']), self.batch_sz])
 		# get the indices of the sample
 		idx = np.random.choice(len(self.D['s']), size = self.minibatch_sz, replace= False)
 		self.minibatch_s = np.array([np.array(self.D['s'][i]) for i in idx])
 		self.minibatch_a = [int(self.D['a'][i]) for i in idx]
 		self.minibatch_r = [self.D['r'][i] for i in idx]
-		self.minibatch_s_next = [self.D['s_next'][i] for i in idx]
+		self.minibatch_s_next = np.array([np.array(self.D['s_next'][i]) for i in idx])
 		self.minibatch_terminal = [self.D['terminal'][i] for i in idx]
 
 	def set_y(self, gamma = 0.2):
 		# generates the prediction
 		self.minibatch_y = self.Q.predict(self.minibatch_s)
-		argmaxQ = np.max(self.Qhat.predict(self.minibatch_s_next, axis=1))
+		argmaxQ = np.max(self.Qhat.predict(self.minibatch_s_next), axis=1)
 		# will generate the y acording to the dqn algorithm
 		for j in np.arange(len(self.minibatch_s)):
 			if self.minibatch_terminal[j] == True:
 				target = self.minibatch_r[j]
 			else:
 				target = self.minibatch_r[j] + gamma * argmaxQ[j]
-			self.minibatch_y[j,self_minibatch_a] = target
+			self.minibatch_y[j,self.minibatch_a] = target
 
 	def gradient_descent_step(self):
-		self.Q.fit(self.minibatch_s, self.minibatch_y, batch_size = self.minibatch_sz)
+		self.Q.fit(self.minibatch_s, self.minibatch_y, batch_size = self.minibatch_sz, epochs = 1)
 
 
 
@@ -105,19 +105,43 @@ class Model:
 	# def grad(self, s, a):
 	# 	# since it is a linear aproximation, the gradient is the same feature vector
 	# 	return self.sa2x_v1(s, a)
-	@staticmethod
-	def getQs(nn, s):
+	def getQs(model, s):
 		s = s.reshape(1, -1)
-		return nn.predict_on_batch(s)[0]
+		return model.Q.predict_on_batch(s)[0]
+
+class e_greedy_timedecay:
+	def __init__(self, action_space, initial_epsilon = 0.8, decaying_factor = 0.9999):
+		self.epsilon = initial_epsilon
+		self.decaying_factor = decaying_factor
+		self.action_space = action_space
+
+	def decay(self):
+		self.epsilon *= self.decaying_factor
+
+	def get_action(self, model, state_vector):
+		# generates a random number
+		rd = np.random.rand(1)[0]
+		print('rd: {}, eps: {}'.format(rd, self.epsilon))
+		if rd >= self.epsilon: # if will exploit
+			print('exploit..')
+			Qs = model.getQs(state_vector)
+			print(Qs)
+			action = np.argmax(Qs)
+			print('action: {}'.format(action))
+		else: # it will explore
+			print('explore..')
+			action = np.random.choice(self.action_space)
+			# print('action: {}'.format(action))
+		return action
 
 
 def main():
 	# number of episodes M
 	M = 2
 	# number of steps per episodes T
-	T = 10
+	T = 20
 	# number of steps C to copied weights into target network
-	C = 50
+	C = 5
 
 	alpha = 0.001
 	gamma = 0.5
@@ -137,7 +161,7 @@ def main():
 	agent = Model(alpha = alpha)
 
 	# defining the policy
-	e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
+	e = e_greedy_timedecay(126, initial_epsilon = 0.1, decaying_factor = 0.9999)
 
 	for episode in np.arange(M):
 		# initial state for episode
@@ -145,8 +169,9 @@ def main():
 		s = env.getstate_vector2()
 
 		for t in np.arange(T):
+			print('episode: {} , step: {}'.format(episode, t))
 			# choose action a
-			a = e.get_action(agent.Q, s)
+			a = e.get_action(agent, s)
 			# take action a, observe r, s'
 			s_next, reward = env.execute_action(a)
 			# check if next state is terminal
@@ -164,6 +189,7 @@ def main():
 			agent.gradient_descent_step()
 			# Every C steps copies target network
 			if (t % C) == 0:
+				print('Copying weights into target network...')
 				agent.Qhat.set_weights(agent.Q.get_weights())
 			# decay epsilon
 			e.decay()
@@ -179,6 +205,10 @@ def main():
 
 			# saves the dataframe for further analysis
 			record.to_csv(outputfile, mode='a', header=False, index=False)
+
+# main loop
+if __name__ == '__main__':
+	main()
 
 
 
