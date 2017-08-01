@@ -125,9 +125,9 @@ class e_greedy_timedecay:
 		if rd >= self.epsilon: # if will exploit
 			print('exploit..')
 			Qs = model.getQs(state_vector)
-			print(Qs)
+			# print(Qs)
 			action = np.argmax(Qs)
-			print('action: {}'.format(action))
+			# print('action: {}'.format(action))
 		else: # it will explore
 			print('explore..')
 			action = np.random.choice(self.action_space)
@@ -137,11 +137,11 @@ class e_greedy_timedecay:
 
 def main():
 	# number of episodes M
-	M = 2
+	M = 20
 	# number of steps per episodes T
-	T = 20
+	T = 500
 	# number of steps C to copied weights into target network
-	C = 5
+	C = 50
 
 	alpha = 0.001
 	gamma = 0.5
@@ -161,7 +161,7 @@ def main():
 	agent = Model(alpha = alpha)
 
 	# defining the policy
-	e = e_greedy_timedecay(126, initial_epsilon = 0.1, decaying_factor = 0.9999)
+	e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
 
 	for episode in np.arange(M):
 		# initial state for episode
