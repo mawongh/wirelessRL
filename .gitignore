@@ -5,3 +5,6 @@ notebooks
 .ipynb_checkpoints
 *.ipynb
 SARSA_training_history.csv
+DQN_training_history.csv
+lena-simple_env_temp.csv
+model-based_history.csv

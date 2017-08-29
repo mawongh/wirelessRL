@@ -15,7 +15,7 @@ from keras import optimizers
 
 
 class Model:
-	def __init__(self, alpha = 0.001, state_vector_len = 105, action_len = 126, max_experiences = 1000, batch_sz = 128):
+	def __init__(self, alpha = 0.001, state_vector_len = 105, action_len = 126, max_experiences = 1000, batch_sz = 512):
 		# creates the experiende replay memory D
 		self.max_experiences = max_experiences
 		self.batch_sz = batch_sz
@@ -91,7 +91,7 @@ class Model:
 				target = self.minibatch_r[j]
 			else:
 				target = self.minibatch_r[j] + gamma * argmaxQ[j]
-			self.minibatch_y[j,self.minibatch_a] = target
+			self.minibatch_y[j,self.minibatch_a[j]] = target
 
 	def gradient_descent_step(self):
 		self.Q.fit(self.minibatch_s, self.minibatch_y, batch_size = self.minibatch_sz, epochs = 1)
@@ -137,11 +137,11 @@ class e_greedy_timedecay:
 
 def main():
 	# number of episodes M
-	M = 20
+	M = 100
 	# number of steps per episodes T
 	T = 500
 	# number of steps C to copied weights into target network
-	C = 50
+	C = 100
 
 	alpha = 0.001
 	gamma = 0.5
@@ -205,6 +205,16 @@ def main():
 
 			# saves the dataframe for further analysis
 			record.to_csv(outputfile, mode='a', header=False, index=False)
+		# end for
+		# save the preliminary weights for some experiments
+		print('save the preliminary weights for some experiments')
+		networkfilename = '{}_Qtarget.h5'.format("%03d" % (episode,))
+		agent.Qhat.save(networkfilename)
+	# end for
+	# save the final weight for some experiments
+	# print('saving the final weights for some experiments...')
+	# agent.Qhat.save('Qtarget_network_final.h5')
+# end main()
 
 # main loop
 if __name__ == '__main__':
