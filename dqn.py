@@ -144,7 +144,7 @@ def main():
 	C = 100
 
 	alpha = 0.001
-	gamma = 0.5
+	gamma = 0.9
 	r_thershold = 5
 
 	outputfile = 'DQN_training_history.csv'
@@ -207,13 +207,13 @@ def main():
 			record.to_csv(outputfile, mode='a', header=False, index=False)
 		# end for
 		# save the preliminary weights for some experiments
-		print('save the preliminary weights for some experiments')
-		networkfilename = '{}_Qtarget.h5'.format("%03d" % (episode,))
-		agent.Qhat.save(networkfilename)
+		# print('save the preliminary weights for some experiments')
+		# networkfilename = '{}_Qtarget.h5'.format("%03d" % (episode,))
+		# agent.Qhat.save(networkfilename)
 	# end for
 	# save the final weight for some experiments
-	# print('saving the final weights for some experiments...')
-	# agent.Qhat.save('Qtarget_network_final.h5')
+	print('saving the final weights for some experiments...')
+	agent.Qhat.save('Qtarget_network_final.h5')
 # end main()
 
 # main loop
