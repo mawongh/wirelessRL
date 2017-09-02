@@ -134,6 +134,31 @@ class e_greedy_timedecay:
 			# print('action: {}'.format(action))
 		return action
 
+class e_greedy_linear_timedecay:
+	def __init__(self, action_space, initial_epsilon = 1, final_epsilon = 0.1, num_steps):
+		self.epsilon = initial_epsilon
+		self.decaying_factor = (initial_epsilon - final_epsilon) / num_steps
+		self.action_space = action_space
+
+	def decay(self):
+		self.epsilon -= self.decaying_factor
+
+	def get_action(self, model, state_vector):
+		# generates a random number
+		rd = np.random.rand(1)[0]
+		print('rd: {}, eps: {}'.format(rd, self.epsilon))
+		if rd >= self.epsilon: # if will exploit
+			print('exploit..')
+			Qs = model.getQs(state_vector)
+			# print(Qs)
+			action = np.argmax(Qs)
+			# print('action: {}'.format(action))
+		else: # it will explore
+			print('explore..')
+			action = np.random.choice(self.action_space)
+			# print('action: {}'.format(action))
+		return action
+
 
 def main():
 	# number of episodes M
@@ -158,10 +183,11 @@ def main():
 	env = network()
 
 	# creates an instance of the model and initizializes the weights (theta)
-	agent = Model(alpha = alpha)
+	agent = Model(alpha = alpha, max_experiences = 50000, batch_sz = 10000)
 
 	# defining the policy
-	e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
+	# e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
+	e = e_greedy_linear_timedecay(126, initial_epsilon = 1, final_epsilon = 0.001, num_steps = M*T)
 
 	for episode in np.arange(M):
 		# initial state for episode
@@ -170,8 +196,10 @@ def main():
 
 		for t in np.arange(T):
 			print('episode: {} , step: {}'.format(episode, t))
+			# normalizes the state
+			s_norm = agent.scaler.transform(s.reshape(1,-1))[0]
 			# choose action a
-			a = e.get_action(agent, s)
+			a = e.get_action(agent, s_norm)
 			# take action a, observe r, s'
 			s_next, reward = env.execute_action(a)
 			# check if next state is terminal
