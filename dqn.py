@@ -135,7 +135,7 @@ class e_greedy_timedecay:
 		return action
 
 class e_greedy_linear_timedecay:
-	def __init__(self, action_space, initial_epsilon = 1, final_epsilon = 0.1, num_steps):
+	def __init__(self, action_space, num_steps, initial_epsilon = 1, final_epsilon = 0.1):
 		self.epsilon = initial_epsilon
 		self.decaying_factor = (initial_epsilon - final_epsilon) / num_steps
 		self.action_space = action_space
@@ -187,7 +187,7 @@ def main():
 
 	# defining the policy
 	# e = e_greedy_timedecay(126, initial_epsilon = 1, decaying_factor = 0.9999)
-	e = e_greedy_linear_timedecay(126, initial_epsilon = 1, final_epsilon = 0.001, num_steps = M*T)
+	e = e_greedy_linear_timedecay(126, num_steps = M*T, initial_epsilon = 1, final_epsilon = 0.001)
 
 	for episode in np.arange(M):
 		# initial state for episode
