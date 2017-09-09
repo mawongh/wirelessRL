@@ -21,11 +21,13 @@ class Model:
 		self.batch_sz = batch_sz
 		self.D = {'s': [], 'a': [], 'r': [], 's_next': [], 'terminal': []}
 		# the number of hidden neurons
-		N = 200
+		N = 400
 		# create the graph for the state-action value funtion Q
 		self.Q = Sequential()
 		# input layer
 		self.Q.add(Dense(N, activation = 'relu', input_shape=(state_vector_len,)))
+		# first layer hidden
+		self.Q.add(Dense(N, activation = 'relu'))
 		# second layer hidden
 		self.Q.add(Dense(N, activation = 'relu'))
 		# output layer
@@ -39,6 +41,8 @@ class Model:
 		self.Qhat = Sequential()
 		# input layer
 		self.Qhat.add(Dense(N, activation = 'relu', input_shape=(state_vector_len,)))
+		# first layer hidden
+		self.Qhat.add(Dense(N, activation = 'relu'))
 		# second layer hidden
 		self.Qhat.add(Dense(N, activation = 'relu'))
 		# output layer
@@ -240,8 +244,9 @@ def main():
 		# agent.Qhat.save(networkfilename)
 	# end for
 	# save the final weight for some experiments
-	print('saving the final weights for some experiments...')
-	agent.Qhat.save('Qtarget_network_final.h5')
+	print('saving the final value function approx for evaluation...')
+	agent.Q.save('Q_network_final.h5')
+	agent.Q.save_weights('Q_network_weights_final.h5')
 # end main()
 
 # main loop
