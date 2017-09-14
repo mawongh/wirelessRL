@@ -86,7 +86,7 @@ def main():
 		# initial state for episode
 		env.readfromcsv()
 		s_wo_Scale = env.getstate_vector2()
-		s = scaler.transform(s_wo_Scale)
+		s = scaler.transform(s_wo_Scale.reshape(1, -1))
 
 		for t in np.arange(T):
 			print('episode: {} , step: {}'.format(episode, t))
@@ -94,7 +94,7 @@ def main():
 			a = e.get_action(agent, s)
 			# take action a, observe r, s'
 			s_next_wo_Scale, reward = env.execute_action(a)
-			s_next = scaler.transform(s_next_wo_Scale)
+			s_next = scaler.transform(s_next_wo_Scale.reshape(1, -1))
 			# check if next state is terminal
 			if reward >= r_thershold:
 				terminal = True
