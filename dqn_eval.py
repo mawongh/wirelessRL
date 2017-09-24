@@ -49,7 +49,7 @@ def main():
 
 	r_thershold = 2
 
-	outputfile = 'dqn_B_eval_history.csv'
+	outputfile = 'dqn_A_eval_history.csv'
 	# for logging creates an empty dataframe with four columns: S, A, R, S'
 	df = pd.DataFrame(columns = ['00_episode', '01_step',
 								'state', 'action', 'reward',
@@ -71,7 +71,7 @@ def main():
 	agent.add(Dense(126, activation = 'linear'))
 	# model.compile(optimizer=optimizers.Adam(), loss='mean_squared_error')
 	# loads the model from file
-	model_weigths = '300K_Q_network_final_weights_v2.h5'
+	model_weigths = '300K_A_Q_network_final_weights.h5'
 	agent.load_weights(model_weigths)
 
 	scaler = StandardScaler()
