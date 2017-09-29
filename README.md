@@ -13,4 +13,5 @@ Mobile Network Operators are facing the challenge of improving their operation e
 - **sarsa_control_linearaprox.py**, implements the SARSA training algorithm with the live environment.
 - **dqn.py**, DQN training with live environment
 - **model_eval.py**, does the evaluation of the specific model with the live network.
+- **ipython_notebooks**, directory where the ipython notebooks are located, mainly the model-based algorithms that were trained using the off-line dataset from the environment
 
